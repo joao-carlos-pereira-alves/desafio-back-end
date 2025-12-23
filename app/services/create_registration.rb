@@ -4,6 +4,9 @@ class CreateRegistration < ApplicationService
   end
 
   def call
+    error = validate_payload
+    return error if error
+
     if @payload[:from_partner] == true && @payload[:many_partners] == true
       @result = create_account_and_notify_partners
     elsif @payload[:from_partner] == true
@@ -18,6 +21,28 @@ class CreateRegistration < ApplicationService
   end
 
   private
+
+  def validate_payload
+    return fail!(:name, "não pode ficar em branco") unless @payload[:name].present?
+    return fail!(:from_partner, "é obrigatório") unless boolean?(@payload[:from_partner])
+    return fail!(:many_partners, "é obrigatório") unless boolean?(@payload[:many_partners])
+    return fail!(:users, "é obrigatório") unless @payload[:users].is_a?(Array) && @payload[:users].any?
+
+    user = @payload[:users].first
+    %i[email first_name last_name phone].each do |field|
+      return fail!(field, "é obrigatório") if user[field].blank?
+    end
+
+    nil
+  end
+
+  def boolean?(value)
+    value == true || value == false
+  end
+
+  def fail!(field, message)
+    Result.new(false, nil, { field => [message] })
+  end
 
   def create_account_and_notify_partner
     CreateAccountAndNotifyPartner.call(@payload)
