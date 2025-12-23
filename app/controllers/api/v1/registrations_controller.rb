@@ -7,8 +7,21 @@ module Api
         if result.success?
           render json: { message: "Registro realizado com sucesso" }, status: :created
         else
-          render json: { error: result.error }, status: :unprocessable_entity
+          render json: {errors: result&.error }, status: :unprocessable_entity
         end
+      end
+
+      def index
+        accounts = Account
+                      .includes(entities: :users)
+
+        render json: accounts.as_json(
+          include: {
+            entities: {
+              include: :users
+            }
+          }
+        )
       end
 
       private
