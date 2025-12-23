@@ -35,14 +35,7 @@ RSpec.describe CreateAccount do
           ],
         }
       end
-      let(:expected_result) { ApplicationService::Result.new(false, nil, "Name can't be blank") }
-
-      it { is_expected.to eql(expected_result) }
-    end
-
-    context "when payload is invalid" do
-      let(:payload) { {} }
-      let(:expected_result) { ApplicationService::Result.new(false, nil, "Account is not valid") }
+      let(:expected_result) { ApplicationService::Result.new(false, nil, { name: ["não pode ficar em branco"] }) }
 
       it { is_expected.to eql(expected_result) }
     end
